@@ -1,0 +1,46 @@
+.TH WHATERMAK 1 "July 2026" "whatermak 0.1.0" "User Commands"
+.SH NAME
+whatermak \- display a click-through image watermark on Sway
+.SH SYNOPSIS
+.B whatermak
+[\fIOPTIONS\fR] \fIIMAGE\fR
+.SH DESCRIPTION
+.B whatermak
+displays a transparent image on the overlay layer of every output. It uses the
+Wayland layer-shell protocol, reserves no screen space, and accepts no pointer
+or keyboard input.
+.SH OPTIONS
+.TP
+.BR \-o ", " \-\-output =\fIOUTPUT\fR
+Show only on an output index or exact monitor name.
+.TP
+.BR \-p ", " \-\-primary
+Show only on the primary output.
+.TP
+.BR \-\-position =\fIPOSITION\fR
+One of top-left, top, top-right, left, center, right, bottom-left, bottom, or
+bottom-right. The default is bottom-right.
+.TP
+.BR \-w ", " \-\-width =\fIPIXELS\fR
+Rendered width in logical pixels. The default is 240.
+.TP
+.BR \-m ", " \-\-margin =\fIPIXELS\fR
+Distance from anchored edges. The default is 32.
+.TP
+.BR \-\-opacity =\fIVALUE\fR
+Opacity greater than 0.0 and at most 1.0. The default is 0.22.
+.TP
+.BR \-v ", " \-\-version
+Print the version and exit.
+.SH EXAMPLES
+.PP
+.nf
+whatermak ~/Pictures/company.png
+whatermak --position=center --width=480 --opacity=0.12 watermark.png
+whatermak --output=1 watermark.png
+.fi
+.SH AUTHORS
+whatermak contributors.
+.SH LICENSE
+GPL-3.0-only.
+
