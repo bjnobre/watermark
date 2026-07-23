@@ -6,9 +6,9 @@ whatermak \- display a click-through image watermark on Sway
 [\fIOPTIONS\fR] \fIIMAGE\fR
 .SH DESCRIPTION
 .B whatermak
-displays a transparent image on the overlay layer of every output. It uses the
-Wayland layer-shell protocol, reserves no screen space, and accepts no pointer
-or keyboard input.
+displays a transparent image on a Wayland layer of every output. It uses the
+layer-shell protocol, reserves no screen space, and accepts no pointer or
+keyboard input.
 .SH OPTIONS
 .TP
 .BR \-o ", " \-\-output =\fIOUTPUT\fR
@@ -20,6 +20,10 @@ Show only on the primary output.
 .BR \-\-position =\fIPOSITION\fR
 One of top-left, top, top-right, left, center, right, bottom-left, bottom, or
 bottom-right. The default is bottom-right.
+.TP
+.BR \-l ", " \-\-layer =\fILAYER\fR
+One of background, bottom, top, or overlay. Bottom places the watermark above
+the wallpaper but below normal windows. The default is overlay.
 .TP
 .BR \-w ", " \-\-width =\fIPIXELS\fR
 Rendered width in logical pixels. The default is 240.
@@ -36,6 +40,7 @@ Print the version and exit.
 .PP
 .nf
 whatermak ~/Pictures/company.png
+whatermak --layer=bottom watermark.png
 whatermak --position=center --width=480 --opacity=0.12 watermark.png
 whatermak --output=1 watermark.png
 .fi
@@ -43,4 +48,3 @@ whatermak --output=1 watermark.png
 whatermak contributors.
 .SH LICENSE
 GPL-3.0-only.
-

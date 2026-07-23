@@ -24,7 +24,9 @@ typedef struct {
   gchar *image_path;
   gchar *output;
   gchar *position_name;
+  gchar *layer_name;
   Position position;
+  GtkLayerShellLayer layer;
   gint width;
   gint margin;
   gdouble opacity;
@@ -35,7 +37,9 @@ typedef struct {
 static const gchar *VERSION = "0.1.0";
 static Options options = {
     .position_name = NULL,
+    .layer_name = NULL,
     .position = POSITION_BOTTOM_RIGHT,
+    .layer = GTK_LAYER_SHELL_LAYER_OVERLAY,
     .width = 240,
     .margin = 32,
     .opacity = 0.22,
@@ -76,6 +80,28 @@ parse_position(const gchar *name, Position *position)
   for (guint i = 0; i < G_N_ELEMENTS(positions); i++) {
     if (g_str_equal(name, positions[i].name)) {
       *position = positions[i].position;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static gboolean
+parse_layer(const gchar *name, GtkLayerShellLayer *layer)
+{
+  static const struct {
+    const gchar *name;
+    GtkLayerShellLayer layer;
+  } layers[] = {
+      {"background", GTK_LAYER_SHELL_LAYER_BACKGROUND},
+      {"bottom", GTK_LAYER_SHELL_LAYER_BOTTOM},
+      {"top", GTK_LAYER_SHELL_LAYER_TOP},
+      {"overlay", GTK_LAYER_SHELL_LAYER_OVERLAY},
+  };
+
+  for (guint i = 0; i < G_N_ELEMENTS(layers); i++) {
+    if (g_str_equal(name, layers[i].name)) {
+      *layer = layers[i].layer;
       return TRUE;
     }
   }
@@ -198,7 +224,7 @@ create_window(GdkMonitor *monitor)
 
   gtk_layer_init_for_window(GTK_WINDOW(window));
   gtk_layer_set_namespace(GTK_WINDOW(window), "whatermak");
-  gtk_layer_set_layer(GTK_WINDOW(window), GTK_LAYER_SHELL_LAYER_OVERLAY);
+  gtk_layer_set_layer(GTK_WINDOW(window), options.layer);
   gtk_layer_set_keyboard_interactivity(GTK_WINDOW(window), FALSE);
   gtk_layer_set_exclusive_zone(GTK_WINDOW(window), 0);
   gtk_layer_set_monitor(GTK_WINDOW(window), monitor);
@@ -254,6 +280,8 @@ main(int argc, char **argv)
        "Show only on the primary output", NULL},
       {"position", 0, 0, G_OPTION_ARG_STRING, &options.position_name,
        "Watermark position", "POSITION"},
+      {"layer", 'l', 0, G_OPTION_ARG_STRING, &options.layer_name,
+       "Wayland layer: background, bottom, top, or overlay", "LAYER"},
       {"width", 'w', 0, G_OPTION_ARG_INT, &options.width,
        "Rendered width in logical pixels", "PIXELS"},
       {"margin", 'm', 0, G_OPTION_ARG_INT, &options.margin,
@@ -302,6 +330,10 @@ main(int argc, char **argv)
   if (options.position_name &&
       !parse_position(options.position_name, &options.position)) {
     g_printerr("whatermak: invalid position '%s'\n", options.position_name);
+    return EXIT_FAILURE;
+  }
+  if (options.layer_name && !parse_layer(options.layer_name, &options.layer)) {
+    g_printerr("whatermak: invalid layer '%s'\n", options.layer_name);
     return EXIT_FAILURE;
   }
   if (!gtk_init_check(NULL, NULL)) {

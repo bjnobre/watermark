@@ -11,6 +11,7 @@ windows in Sway and other wlroots-based Wayland compositors. It uses
 - Click-through: it does not intercept pointer or keyboard input
 - One watermark per output by default
 - Configurable output, position, width, margin, and opacity
+- Configurable Wayland layer
 - No reserved screen space
 
 The overlay intentionally does not bypass secure lock-screen layers.
@@ -68,6 +69,15 @@ For example:
 whatermak --position=bottom-right --width=240 --opacity=0.22 logo.png
 ```
 
+To show it above the wallpaper but below every normal window:
+
+```sh
+whatermak --layer=bottom logo.png
+```
+
+Available layers are `background`, `bottom`, `top`, and `overlay`. The default
+is `overlay` to preserve traditional always-on-top watermark behavior.
+
 The installation includes a neutral sample watermark at
 `$prefix/share/whatermak/confidential.svg`.
 
@@ -76,7 +86,7 @@ Run `whatermak --help` for every option.
 To start it with Sway, add this to `~/.config/sway/config`:
 
 ```text
-exec whatermak --position=bottom-right --opacity=0.22 /absolute/path/logo.png
+exec whatermak --layer=bottom --position=bottom-right --opacity=0.22 /absolute/path/logo.png
 ```
 
 Use an absolute image path because the process is started from Sway's working
