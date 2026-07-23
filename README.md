@@ -68,6 +68,9 @@ For example:
 whatermak --position=bottom-right --width=240 --opacity=0.22 logo.png
 ```
 
+The installation includes a neutral sample watermark at
+`$prefix/share/whatermak/confidential.svg`.
+
 Run `whatermak --help` for every option.
 
 To start it with Sway, add this to `~/.config/sway/config`:

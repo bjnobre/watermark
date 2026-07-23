@@ -19,3 +19,8 @@ whatermak = executable(
 test('version', whatermak, args: ['--version'])
 
 install_man('whatermak.1')
+
+install_data(
+  'assets/confidential.svg',
+  install_dir: get_option('datadir') / 'whatermak',
+)
