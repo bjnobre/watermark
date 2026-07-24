@@ -78,8 +78,19 @@ whatermak --layer=bottom logo.png
 Available layers are `background`, `bottom`, `top`, and `overlay`. The default
 is `overlay` to preserve traditional always-on-top watermark behavior.
 
-The installation includes a neutral sample watermark at
-`$prefix/share/whatermak/confidential.svg`.
+The installation includes sample watermarks under
+`$prefix/share/whatermak/`:
+
+- `activate-linux.svg`, a playful desktop activation parody
+
+![Activate Linux parody watermark](assets/activate-linux.svg)
+
+Try the parody above the wallpaper and below normal windows:
+
+```sh
+whatermak --layer=bottom --position=bottom-right --width=360 \
+  --opacity=0.75 /usr/local/share/whatermak/activate-linux.svg
+```
 
 Run `whatermak --help` for every option.
 

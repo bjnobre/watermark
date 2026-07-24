@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  A playful Linux parody of the familiar desktop activation watermark.
+  Copyright (C) 2026 whatermak contributors
+  SPDX-License-Identifier: GPL-3.0-only
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="460" height="86" viewBox="0 0 460 86">
+  <text x="0" y="31" fill="#ffffff"
+        font-family="Noto Sans, DejaVu Sans, sans-serif"
+        font-size="26" font-weight="400"
+        text-rendering="geometricPrecision">Activate Linux</text>
+  <text x="0" y="61" fill="#ffffff"
+        font-family="Noto Sans, DejaVu Sans, sans-serif"
+        font-size="14" font-weight="400"
+        text-rendering="geometricPrecision">Go to Settings to activate Linux.</text>
+</svg>
