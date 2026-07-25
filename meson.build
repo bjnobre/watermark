@@ -1,7 +1,7 @@
 project(
   'whatermak',
   'c',
-  version: '0.1.0',
+  version: '0.1.1',
   license: 'GPL-3.0-only',
   default_options: ['c_std=c11', 'warning_level=3'],
 )

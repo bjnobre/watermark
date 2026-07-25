@@ -10,6 +10,7 @@ windows in Sway and other wlroots-based Wayland compositors. It uses
 - Transparent PNG and other GdkPixbuf-supported image formats
 - Click-through: it does not intercept pointer or keyboard input
 - One watermark per output by default
+- Recreates watermark surfaces when outputs return after suspend
 - Configurable output, position, width, margin, and opacity
 - Configurable Wayland layer
 - No reserved screen space

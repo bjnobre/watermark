@@ -34,7 +34,7 @@ typedef struct {
   gboolean version;
 } Options;
 
-static const gchar *VERSION = "0.1.0";
+static const gchar *VERSION = "0.1.1";
 static Options options = {
     .position_name = NULL,
     .layer_name = NULL,
@@ -46,6 +46,9 @@ static Options options = {
     .all_outputs = TRUE,
 };
 static GPtrArray *windows;
+static guint rebuild_source_id;
+static gulong monitor_added_handler;
+static gulong monitor_removed_handler;
 
 static void
 install_transparent_style(void)
@@ -233,19 +236,17 @@ create_window(GdkMonitor *monitor)
   image = gtk_image_new_from_pixbuf(scaled);
   gtk_container_add(GTK_CONTAINER(window), image);
   g_signal_connect(window, "realize", G_CALLBACK(make_click_through), NULL);
-  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
   gtk_widget_show_all(window);
   return window;
 }
 
-static void
+static gboolean
 show_watermarks(void)
 {
   GdkDisplay *display = gdk_display_get_default();
   gint count = gdk_display_get_n_monitors(display);
   gboolean matched = FALSE;
 
-  windows = g_ptr_array_new();
   for (gint i = 0; i < count; i++) {
     GdkMonitor *monitor = gdk_display_get_monitor(display, i);
     gboolean selected = options.output
@@ -257,15 +258,80 @@ show_watermarks(void)
 
     GtkWidget *window = create_window(monitor);
     if (!window)
-      exit(EXIT_FAILURE);
+      return FALSE;
     g_ptr_array_add(windows, window);
     matched = TRUE;
   }
 
-  if (!matched) {
-    g_printerr("whatermak: no output matched '%s'\n",
-               options.output ? options.output : "(primary)");
-    exit(EXIT_FAILURE);
+  return matched;
+}
+
+static void
+clear_watermarks(void)
+{
+  for (guint i = 0; i < windows->len; i++)
+    gtk_widget_destroy(g_ptr_array_index(windows, i));
+  g_ptr_array_set_size(windows, 0);
+}
+
+static gboolean
+rebuild_watermarks(gpointer unused)
+{
+  (void)unused;
+  rebuild_source_id = 0;
+  clear_watermarks();
+
+  /*
+   * An output may temporarily disappear while it is power-cycled. Keep the
+   * process alive; monitor-added will schedule another rebuild when it returns.
+   */
+  if (!show_watermarks())
+    g_warning("no matching output is currently available");
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+monitors_changed(GdkDisplay *display, GdkMonitor *monitor, gpointer unused)
+{
+  (void)display;
+  (void)monitor;
+  (void)unused;
+
+  /*
+   * Output removal and addition can arrive back-to-back during resume. Debounce
+   * them so surfaces are rebuilt once against the settled monitor list.
+   */
+  if (rebuild_source_id != 0)
+    g_source_remove(rebuild_source_id);
+  rebuild_source_id = g_timeout_add(500, rebuild_watermarks, NULL);
+}
+
+static void
+watch_outputs(GdkDisplay *display)
+{
+  monitor_added_handler =
+      g_signal_connect(display, "monitor-added", G_CALLBACK(monitors_changed),
+                       NULL);
+  monitor_removed_handler =
+      g_signal_connect(display, "monitor-removed", G_CALLBACK(monitors_changed),
+                       NULL);
+}
+
+static void
+stop_watching_outputs(GdkDisplay *display)
+{
+  if (monitor_added_handler != 0) {
+    g_signal_handler_disconnect(display, monitor_added_handler);
+    monitor_added_handler = 0;
+  }
+  if (monitor_removed_handler != 0) {
+    g_signal_handler_disconnect(display, monitor_removed_handler);
+    monitor_removed_handler = 0;
+  }
+  if (rebuild_source_id != 0) {
+    g_source_remove(rebuild_source_id);
+    rebuild_source_id = 0;
   }
 }
 
@@ -346,8 +412,18 @@ main(int argc, char **argv)
   }
 
   install_transparent_style();
-  show_watermarks();
+  windows = g_ptr_array_new();
+  watch_outputs(gdk_display_get_default());
+  if (!show_watermarks()) {
+    g_printerr("whatermak: no output matched '%s'\n",
+               options.output ? options.output : "(primary)");
+    stop_watching_outputs(gdk_display_get_default());
+    g_ptr_array_free(windows, TRUE);
+    return EXIT_FAILURE;
+  }
   gtk_main();
+  stop_watching_outputs(gdk_display_get_default());
+  clear_watermarks();
   g_ptr_array_free(windows, TRUE);
   return EXIT_SUCCESS;
 }
